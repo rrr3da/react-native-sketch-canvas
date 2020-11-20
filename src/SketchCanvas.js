@@ -155,14 +155,10 @@ class SketchCanvas extends React.Component {
   componentWillMount() {
     this.panResponder = PanResponder.create({
       // Ask to be the responder:
-      // onStartShouldSetPanResponder: (evt, gestureState) => true,
-      // onStartShouldSetPanResponderCapture: (evt, gestureState) => true,
-      // onMoveShouldSetPanResponder: (evt, gestureState) => true,
-      // onMoveShouldSetPanResponderCapture: (evt, gestureState) => true,
-      onStartShouldSetPanResponder: (evt, gestureState) => this.props.onStartShouldSetPanResponder != null ? this.props.onStartShouldSetPanResponder(evt, gestureState) : true,
-      onStartShouldSetPanResponderCapture: (evt, gestureState) => this.props.onStartShouldSetPanResponderCapture != null ? this.props.onStartShouldSetPanResponderCapture(evt, gestureState) : true,
-      onMoveShouldSetPanResponder: (evt, gestureState) => this.props.onMoveShouldSetPanResponder != null ? this.props.onMoveShouldSetPanResponder(evt, gestureState) : true,
-      onMoveShouldSetPanResponderCapture: (evt, gestureState) => this.props.onMoveShouldSetPanResponderCapture != null ? this.props.onMoveShouldSetPanResponderCapture(evt, gestureState) : true,
+      onStartShouldSetPanResponder: (evt, gestureState) => this.props.onStartShouldSetResponder != null ? this.props.onStartShouldSetResponder(evt, gestureState) : true,
+      onStartShouldSetPanResponderCapture: (evt, gestureState) => this.props.onStartShouldSetResponderCapture != null ? this.props.onStartShouldSetResponderCapture(evt, gestureState) : true,
+      onMoveShouldSetPanResponder: (evt, gestureState) => this.props.onMoveShouldSetResponder != null ? this.props.onMoveShouldSetResponder(evt, gestureState) : true,
+      onMoveShouldSetPanResponderCapture: (evt, gestureState) => this.props.onMoveShouldSetResponderCapture != null ? this.props.onMoveShouldSetResponderCapture(evt, gestureState) : true,
 
       onPanResponderGrant: (evt, gestureState) => {
         if (!this.props.touchEnabled) return
@@ -194,43 +190,17 @@ class SketchCanvas extends React.Component {
         this._path.data.push(`${x},${y}`)
         this.props.onStrokeStart(x, y)
       },
-      // onPanResponderMove: (evt, gestureState) => {
-      //   if (!this.props.touchEnabled) return
-      //   if (this._path) {
-      //     UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.addPoint, [
-      //       parseFloat((gestureState.moveX - this._offset.x).toFixed(2) * this._screenScale),
-      //       parseFloat((gestureState.moveY - this._offset.y).toFixed(2) * this._screenScale)
-      //     ])
-      //     const x = parseFloat((gestureState.moveX - this._offset.x).toFixed(2)), y = parseFloat((gestureState.moveY - this._offset.y).toFixed(2))
-      //     this._path.data.push(`${x},${y}`)
-      //     this.props.onStrokeChanged(x, y)
-      //   }
-      // },
       onPanResponderMove: (evt, gestureState) => {
         if (!this.props.touchEnabled) return
-
-        if (this.path == null) {
-          const e = evt.nativeEvent
-          this._offset = { x: e.pageX - e.locationX, y: e.pageY - e.locationY }
-          this._path = {
-            id: parseInt(Math.random() * 100000000),
-            color: this.props.strokeColor,
-            width: this.props.strokeWidth,
-            data: []
-          }
-          
-          const x = parseFloat((gestureState.x0 - this._offset.x).toFixed(2)), y = parseFloat((gestureState.y0 - this._offset.y).toFixed(2))
+        if (this._path) {
+          UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.addPoint, [
+            parseFloat((gestureState.moveX - this._offset.x).toFixed(2) * this._screenScale),
+            parseFloat((gestureState.moveY - this._offset.y).toFixed(2) * this._screenScale)
+          ])
+          const x = parseFloat((gestureState.moveX - this._offset.x).toFixed(2)), y = parseFloat((gestureState.moveY - this._offset.y).toFixed(2))
           this._path.data.push(`${x},${y}`)
-          this.props.onStrokeStart(x, y)
+          this.props.onStrokeChanged(x, y)
         }
-
-        UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.addPoint, [
-          parseFloat((gestureState.moveX - this._offset.x).toFixed(2) * this._screenScale),
-          parseFloat((gestureState.moveY - this._offset.y).toFixed(2) * this._screenScale)
-        ])
-        const x = parseFloat((gestureState.moveX - this._offset.x).toFixed(2)), y = parseFloat((gestureState.moveY - this._offset.y).toFixed(2))
-        this._path.data.push(`${x},${y}`)
-        this.props.onStrokeChanged(x, y)
       },
       onPanResponderRelease: (evt, gestureState) => {
         if (!this.props.touchEnabled) return
